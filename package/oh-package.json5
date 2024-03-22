@@ -1,0 +1,10 @@
+{
+  license: "MIT",
+  author: "southorange0929",
+  name: "@ohos-rs/mmkv",
+  description: "MMKV binding in OpenHarmony",
+  main: "index.ets",
+  version: "0.0.1",
+  repository: "https://github.com/ohos-rs/mmkv.git",
+  types: "libs/index.d.ts"
+}

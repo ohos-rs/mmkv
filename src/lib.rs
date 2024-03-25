@@ -37,10 +37,10 @@ impl JsMMKV {
 
     /// get bool from mmkv
     #[napi]
-    pub fn decode_bool(&self, key: String) {
+    pub fn decode_bool(&self, key: String) -> bool {
         let k = CString::new(key).unwrap();
         unsafe {
-            sys::get_bool(self.inner.clone(), k.as_ptr().cast());
+            sys::get_bool(self.inner.clone(), k.as_ptr().cast())
         }
     }
 }

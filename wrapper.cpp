@@ -2,13 +2,22 @@
 #include <string>
 
 // C ABI
-extern "C" MMKV *get_mmkv_instance() {
-    return MMKV::defaultMMKV();
+extern "C" MMKV *get_mmkv_instance(MMKVMode mode, const char *cryptKey) {
+    std::string *tmp = nullptr;
+    if (cryptKey != nullptr) {
+        tmp = new std::string (cryptKey);
+    }
+    auto mmkv = MMKV::defaultMMKV(mode,tmp);
+    if (tmp != nullptr) {
+        delete tmp;
+        tmp = nullptr;
+    }
+    return mmkv;
 }
 
-extern "C" void init_mmkv(const char *dir) {
+extern "C" void init_mmkv(const char *dir, MMKVLogLevel logLevel, mmkv::LogHandler handler) {
     std::string tmp(dir);
-    MMKV::initializeMMKV(tmp);
+    MMKV::initializeMMKV(tmp,logLevel,handler);
 }
 
 extern "C" void set_bool(MMKV *mmkv,bool v,const char *k) {

@@ -6,5 +6,15 @@
   main: "index.ets",
   version: "0.0.1",
   repository: "https://github.com/ohos-rs/mmkv.git",
-  types: "libs/index.d.ts"
+  types: "libs/index.d.ts",
+  keywords: [
+    "napi",
+    "rust",
+    "mmkv",
+    "kv",
+    "MMKV",
+    "node-api",
+    "N-API",
+    "storage"
+  ]
 }

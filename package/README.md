@@ -13,7 +13,7 @@ ohpm install @ohos-rs/mmkv
 ## Usage
 
 ```ts
-import { MMKV } from '@ohos-rs/mmkv';
+import { MMKV, MMKVLogLevel, MMKVMode } from '@ohos-rs/mmkv';
 
 const m = new MMKV("/data/storage/el2/base/haps/entry/files/mmkv",MMKVLogLevel.Info,MMKVMode.SingleProcess);
 

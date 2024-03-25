@@ -1,1 +1,1 @@
-export * from "libxxhash.so";
+export * from "libmmkv.so";

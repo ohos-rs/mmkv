@@ -6,6 +6,11 @@ use walkdir::{DirEntry, WalkDir};
 fn main() {
     let h = env::current_dir().unwrap().join("mmkv/Core");
     let ndk = env::var("OHOS_NDK_HOME").unwrap();
+
+    let is_release = env::var("PROFILE")
+        .unwrap_or(String::from("DEBUG"))
+        .eq("release");
+
     let basic_h = PathBuf::from(&ndk).join("native/sysroot/usr/include");
     println!("cargo:rustc-link-search={:?}", &h);
     println!("cargo:rustc-link-search={:?}", &basic_h);
@@ -60,7 +65,7 @@ fn main() {
         .file("wrapper.cpp")
         .files(cpp_files)
         .define("__MUSL__", None)
-        .debug(true)
+        .debug(!is_release)
         .cpp(true)
         .include(&h)
         .include(&basic_h)

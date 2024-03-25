@@ -1,5 +1,5 @@
 use napi_derive_ohos::napi;
-use std::ffi::{c_char, c_double, c_int, c_void};
+use std::ffi::{c_char, c_int, c_uint, c_void};
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -36,10 +36,7 @@ type MMKVLogHandler = Option<
 >;
 
 extern "C" {
-    pub fn get_mmkv_instance(
-        mode: MMKVMode,
-        crypt_key: *const c_char,
-    ) -> *const MMKV;
+    pub fn get_mmkv_instance(mode: MMKVMode, crypt_key: *const c_char) -> *const MMKV;
     pub fn init_mmkv(
         root_dir: *const c_char,
         log_level: MMKVLogLevel,
@@ -47,8 +44,7 @@ extern "C" {
     ) -> c_void;
     pub fn set_bool(mmkv: *const MMKV, v: bool, k: *const c_char) -> c_void;
     pub fn get_bool(mmkv: *const MMKV, k: *const c_char) -> bool;
-    pub fn set_i32(mmkv: *const MMKV, v: c_int, k: *const c_char) -> c_void;
-    pub fn get_i32(mmkv: *const MMKV, k: *const c_char) -> c_int;
-    pub fn set_f64(mmkv: *const MMKV, v: c_double, k: *const c_char) -> c_void;
-    pub fn get_f64(mmkv: *const MMKV, k: *const c_char) -> c_double;
+    pub fn get_string(mmkv: *const MMKV, k: *const c_char) -> *const c_char;
+    pub fn set_string(mmkv: *const MMKV, v: *const c_char, k: *const c_char) -> c_void;
+    pub fn enable_auto_key_expire(mmkv: *const MMKV, expire: c_uint) -> c_void;
 }

@@ -30,22 +30,21 @@ extern "C" bool get_bool(MMKV *mmkv,const char *k) {
     return mmkv->getBool(tmp);
 }
 
-extern "C" void set_i32(MMKV *mmkv,int32_t v,const char *k) {
-    std::string tmp(k);
-    mmkv->set(v,tmp);
+extern "C" void set_string(MMKV *mmkv,const char *v,const char *k) {
+    std::string value(v);
+    std::string key(k);
+    mmkv->set(value,key);
 }
 
-extern "C" int32_t get_i32(MMKV *mmkv,const char *k) {
+extern "C" const char* get_string(MMKV *mmkv,const char *k) {
     std::string tmp(k);
-    return mmkv->getInt32(tmp);
+    std::string result;
+    mmkv->getString(tmp,result);
+    char* resultCStr = new char[result.size() + 1]; 
+    std::strcpy(resultCStr, result.c_str());
+    return resultCStr;
 }
 
-extern "C" void set_f64(MMKV *mmkv,double v,const char *k) {
-    std::string tmp(k);
-    mmkv->set(v,k);
-}
-
-extern "C" double get_f64(MMKV *mmkv,const char *k) {
-    std::string tmp(k);
-    return mmkv->getDouble(tmp);
+extern "C" void enable_auto_key_expire(MMKV *mmkv,uint32_t expire) {
+    mmkv->enableAutoKeyExpire(expire);
 }

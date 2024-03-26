@@ -2,7 +2,9 @@ mod sys;
 
 use crate::sys::{MMKVLogLevel, MMKVMode, MMKV};
 use napi_derive_ohos::napi;
-use std::ffi::{CStr, CString};
+use napi_ohos::bindgen_prelude::BigInt;
+use napi_ohos::JsBigInt;
+use std::ffi::{c_char, c_int, CStr, CString};
 
 #[napi(js_name = "MMKV")]
 pub struct JsMMKV {
@@ -67,6 +69,77 @@ impl JsMMKV {
         let v = CString::new(value).unwrap();
         unsafe {
             sys::set_string(self.inner.clone(), v.as_ptr().cast(), k.as_ptr().cast());
+        }
+    }
+
+    /// set number include int float etc.s
+    #[napi]
+    pub fn encode_number(&self, key: String, value: f64, _expire: Option<i32>) {
+        let k = CString::new(key).unwrap();
+        unsafe {
+            sys::set_double(self.inner.clone(), value, k.as_ptr().cast());
+        }
+    }
+
+    /// get number
+    #[napi]
+    pub fn decode_number(&self, key: String) -> f64 {
+        let k = CString::new(key).unwrap();
+        unsafe { sys::get_double(self.inner.clone(), k.as_ptr().cast()) as f64 }
+    }
+
+    /// set bigint which will store as `Vec<string>`, and the first element is a flag, 1 for negative numbers.
+    #[napi]
+    pub fn encode_bigint(&self, key: String, mut value: JsBigInt, _expire: Option<i32>) {
+        let k = CString::new(key).unwrap();
+        let (signed, mut words) = value.get_words().unwrap();
+        words.insert(
+            0,
+            match signed {
+                true => 1,
+                false => 0,
+            },
+        );
+        let c_strings = words
+            .iter()
+            .map(|&num| CString::new(num.to_string()).unwrap())
+            .collect::<Vec<CString>>();
+        let c_ptrs: Vec<*const c_char> = c_strings.iter().map(|s| s.as_ptr()).collect();
+        unsafe {
+            sys::set_string_list(
+                self.inner.clone(),
+                c_ptrs.as_ptr().cast(),
+                c_ptrs.len() as i32,
+                k.as_ptr().cast(),
+            );
+        }
+    }
+
+    /// get bigint
+    #[napi]
+    pub fn decode_bigint(&self, key: String) -> BigInt {
+        let k = CString::new(key).unwrap();
+        let mut length: c_int = 0;
+        let c_strings = unsafe {
+            let ptr = sys::get_string_list(self.inner.clone(), &mut length, k.as_ptr().cast());
+            std::slice::from_raw_parts(ptr, length as usize)
+        };
+
+        let mut strings: Vec<u64> = c_strings
+            .iter()
+            .map(|&c_str| {
+                unsafe { CStr::from_ptr(c_str).to_string_lossy().into_owned() }
+                    .parse()
+                    .unwrap()
+            })
+            .collect();
+        let flags = match strings.remove(0) {
+            0 => false,
+            _ => true,
+        };
+        BigInt {
+            words: strings,
+            sign_bit: flags,
         }
     }
 }

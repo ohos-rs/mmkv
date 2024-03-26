@@ -1,5 +1,5 @@
 use napi_derive_ohos::napi;
-use std::ffi::{c_char, c_int, c_uint, c_void};
+use std::ffi::{c_char, c_double, c_int, c_uint, c_void};
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -47,4 +47,17 @@ extern "C" {
     pub fn get_string(mmkv: *const MMKV, k: *const c_char) -> *const c_char;
     pub fn set_string(mmkv: *const MMKV, v: *const c_char, k: *const c_char) -> c_void;
     pub fn enable_auto_key_expire(mmkv: *const MMKV, expire: c_uint) -> c_void;
+    pub fn set_double(mmkv: *const MMKV, v: c_double, k: *const c_char) -> c_void;
+    pub fn get_double(mmkv: *const MMKV, k: *const c_char) -> c_double;
+    pub fn set_string_list(
+        mmkv: *const MMKV,
+        v: *const *const c_char,
+        length: c_int,
+        k: *const c_char,
+    ) -> c_void;
+    pub fn get_string_list(
+        mmkv: *const MMKV,
+        length: *mut c_int,
+        k: *const c_char,
+    ) -> *const *const c_char;
 }

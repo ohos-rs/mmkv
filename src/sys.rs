@@ -60,4 +60,12 @@ extern "C" {
         length: *mut c_int,
         k: *const c_char,
     ) -> *const *const c_char;
+    pub fn remove_value_for_key(mmkv: *const MMKV, v: *const c_char) -> c_void;
+    pub fn remove_values_for_keys(
+        mmkv: *const MMKV,
+        v: *const *const c_char,
+        length: c_int,
+    ) -> c_void;
+    pub fn contains_key(mmkv: *const MMKV, v: *const c_char) -> bool;
+    pub fn all_keys(mmkv: *const MMKV, length: *mut c_int) -> *const *const c_char;
 }

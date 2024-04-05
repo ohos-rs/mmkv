@@ -3,7 +3,7 @@ mod sys;
 use crate::sys::{MMKVLogLevel, MMKVMode, MMKV};
 use napi_derive_ohos::napi;
 use napi_ohos::bindgen_prelude::BigInt;
-use napi_ohos::JsBigInt;
+use napi_ohos::{Either, JsBigInt};
 use std::ffi::{c_char, c_int, CStr, CString};
 
 #[napi(js_name = "MMKV")]
@@ -104,7 +104,7 @@ impl JsMMKV {
             .iter()
             .map(|&num| CString::new(num.to_string()).unwrap())
             .collect::<Vec<CString>>();
-        let c_ptrs: Vec<*const c_char> = c_strings.iter().map(|s| s.as_ptr()).collect();
+        let c_ptrs: Vec<*const c_char> = c_strings.iter().map(|s| s.as_ptr().cast()).collect();
         unsafe {
             sys::set_string_list(
                 self.inner.clone(),
@@ -141,5 +141,62 @@ impl JsMMKV {
             words: strings,
             sign_bit: flags,
         }
+    }
+
+    /// remove key or keys
+    #[napi]
+    pub fn remove_value_for_key(&self, key: Either<String, Vec<String>>) {
+        match key {
+            Either::A(k) => {
+                let remove_key = CString::new(k).unwrap();
+                unsafe {
+                    sys::remove_value_for_key(self.inner.clone(), remove_key.as_ptr().cast());
+                }
+            }
+            Either::B(keys) => {
+                let remove_keys: Vec<*const c_char> = keys
+                    .iter()
+                    .map(|v| {
+                        let t = CString::new(v.as_str()).unwrap();
+                        t.as_ptr().cast()
+                    })
+                    .collect::<Vec<*const c_char>>();
+                unsafe {
+                    sys::remove_values_for_keys(
+                        self.inner.clone(),
+                        remove_keys.as_ptr().cast(),
+                        remove_keys.len() as i32,
+                    );
+                }
+            }
+        }
+    }
+
+    /// check key if existed
+    #[napi]
+    pub fn contains_key(&self, key: String) -> bool {
+        let k = CString::new(key).unwrap();
+        unsafe { sys::contains_key(self.inner.clone(), k.as_ptr().cast()) }
+    }
+
+    /// get current mmkv instance's all keys
+    #[napi]
+    pub fn all_keys(&self) -> Vec<String> {
+        let mut length: c_int = 0;
+        let c_strings = unsafe {
+            let ptr = sys::all_keys(self.inner.clone(), &mut length);
+            std::slice::from_raw_parts(ptr, length as usize)
+        };
+
+        let strings: Vec<String> = c_strings
+            .iter()
+            .map(|&c_str| {
+                unsafe { CStr::from_ptr(c_str).to_string_lossy().into_owned() }
+                    .parse()
+                    .unwrap()
+            })
+            .collect();
+
+        strings
     }
 }

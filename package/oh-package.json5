@@ -4,7 +4,7 @@
   name: "@ohos-rs/mmkv",
   description: "MMKV binding in OpenHarmony",
   main: "index.ets",
-  version: "0.0.2",
+  version: "0.0.3",
   repository: "https://github.com/ohos-rs/mmkv.git",
   types: "libs/index.d.ts",
   keywords: [

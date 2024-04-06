@@ -7,3 +7,5 @@ target/
 package/libs
 
 Cargo.lock
+
+*.har

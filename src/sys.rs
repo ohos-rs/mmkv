@@ -37,6 +37,7 @@ type MMKVLogHandler = Option<
 
 extern "C" {
     pub fn get_mmkv_instance(mode: MMKVMode, crypt_key: *const c_char) -> *const MMKV;
+    pub fn get_mmap_id(mmkv: *const MMKV) -> *const c_char;
     pub fn init_mmkv(
         root_dir: *const c_char,
         log_level: MMKVLogLevel,
@@ -68,4 +69,6 @@ extern "C" {
     ) -> c_void;
     pub fn contains_key(mmkv: *const MMKV, v: *const c_char) -> bool;
     pub fn all_keys(mmkv: *const MMKV, length: *mut c_int) -> *const *const c_char;
+    pub fn get_actual_size(mmkv: *const MMKV) -> c_int;
+    pub fn get_total_size(mmkv: *const MMKV) -> c_int;
 }

@@ -199,4 +199,30 @@ impl JsMMKV {
 
         strings
     }
+
+    /// get current mmkv instance's mmap id
+    #[napi]
+    pub fn get_mmap_id(&self) -> String {
+        unsafe {
+            let c_value = sys::get_mmap_id(self.inner.clone());
+            let r_value = CStr::from_ptr(c_value).to_str().unwrap();
+            r_value.to_string()
+        }
+    }
+
+    /// get current mmkv instance's storage size
+    /// @default TOTAL
+    #[napi]
+    pub fn get_storage_size(
+        &self,
+        #[napi(ts_arg_type = "'ACTUAL' | 'TOTAL'")] size_type: Option<String>,
+    ) -> i32 {
+        match size_type {
+            Some(t) => match t.as_str() {
+                "ACTUAL" => unsafe { sys::get_actual_size(self.inner.clone()) },
+                _ => unsafe { sys::get_total_size(self.inner.clone()) },
+            },
+            None => unsafe { sys::get_total_size(self.inner.clone()) },
+        }
+    }
 }

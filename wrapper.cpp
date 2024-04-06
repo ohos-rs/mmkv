@@ -25,6 +25,14 @@ extern "C" void init_mmkv(const char *dir, MMKVLogLevel logLevel, mmkv::LogHandl
     MMKV::initializeMMKV(tmp, logLevel, handler);
 }
 
+extern "C" const char *get_mmap_id(MMKV *mmkv)
+{
+    std::string result = mmkv->mmapID();
+    char *resultCStr = new char[result.size() + 1];
+    std::strcpy(resultCStr, result.c_str());
+    return resultCStr;
+}
+
 extern "C" void set_bool(MMKV *mmkv, bool v, const char *k)
 {
     std::string tmp(k);
@@ -122,4 +130,14 @@ extern "C" const char **all_keys(MMKV *mmkv, size_t *length)
     }
     *length = v.size();
     return c_strings.data();
+}
+
+extern "C" size_t get_actual_size(MMKV *mmkv)
+{
+    return mmkv->actualSize();
+}
+
+extern "C" size_t get_total_size(MMKV *mmkv)
+{
+    return mmkv->totalSize();
 }

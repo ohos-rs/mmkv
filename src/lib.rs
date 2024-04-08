@@ -5,6 +5,17 @@ use napi_derive_ohos::napi;
 use napi_ohos::bindgen_prelude::BigInt;
 use napi_ohos::{Either, JsBigInt};
 use std::ffi::{c_char, c_int, CStr, CString};
+use std::ptr;
+
+#[napi(object)]
+pub struct InitOption {
+    /// mmkv instance's log level
+    pub log_level: Option<MMKVLogLevel>,
+    /// mmkv instance mode
+    pub mode: Option<MMKVMode>,
+    /// mmkv instance id if is empty, will use default.
+    pub mmap_id: Option<String>,
+}
 
 #[napi(js_name = "MMKV")]
 pub struct JsMMKV {
@@ -14,16 +25,38 @@ pub struct JsMMKV {
 #[napi]
 impl JsMMKV {
     #[napi(constructor)]
-    pub fn new(root_dir: String, log_level: Option<MMKVLogLevel>, mode: Option<MMKVMode>) -> Self {
+    pub fn new(root_dir: String, options: Option<InitOption>) -> Self {
         let root_dir_c_str = CString::new(root_dir).unwrap();
-        let level = log_level.unwrap_or(MMKVLogLevel::Info);
+        let level = match &options {
+            Some(o) => o.log_level.unwrap_or(MMKVLogLevel::Info),
+            None => MMKVLogLevel::Info,
+        };
+        let mmap_id = match &options {
+            Some(o) => o.mmap_id.clone(),
+            None => None,
+        };
+
+        let mode = match &options {
+            Some(o) => o.mode.unwrap_or(MMKVMode::SingleProcess),
+            None => MMKVMode::SingleProcess,
+        };
+
         unsafe {
             sys::init_mmkv(root_dir_c_str.as_ptr().cast(), level, None);
-            JsMMKV {
-                inner: sys::get_mmkv_instance(
-                    mode.unwrap_or(MMKVMode::SingleProcess),
-                    std::ptr::null(),
-                ),
+            match mmap_id {
+                Some(id) => {
+                    let c_id = CString::new(id).unwrap();
+                    JsMMKV {
+                        inner: sys::get_mmkv_instance_with_id(
+                            c_id.as_ptr().cast(),
+                            mode,
+                            std::ptr::null(),
+                        ),
+                    }
+                }
+                None => JsMMKV {
+                    inner: sys::get_mmkv_instance(mode, std::ptr::null()),
+                },
             }
         }
     }
@@ -223,6 +256,40 @@ impl JsMMKV {
                 _ => unsafe { sys::get_total_size(self.inner.clone()) },
             },
             None => unsafe { sys::get_total_size(self.inner.clone()) },
+        }
+    }
+
+    /// basic method to back up data
+    #[napi]
+    pub fn back_up_to_directory(dir: String, mmap_id: Option<String>) {
+        let root_dir = CString::new(dir).unwrap();
+        match mmap_id {
+            Some(id) => {
+                let c_id = CString::new(id).unwrap();
+                unsafe {
+                    sys::back_up(root_dir.as_ptr().cast(), c_id.as_ptr().cast());
+                }
+            }
+            None => unsafe {
+                sys::back_up(root_dir.as_ptr().cast(), ptr::null() as *const c_char);
+            },
+        }
+    }
+
+    /// basic method to restore data
+    #[napi]
+    pub fn restore_from_directory(dir: String, mmap_id: Option<String>) {
+        let root_dir = CString::new(dir).unwrap();
+        match mmap_id {
+            Some(id) => {
+                let c_id = CString::new(id).unwrap();
+                unsafe {
+                    sys::restore(root_dir.as_ptr().cast(), c_id.as_ptr().cast());
+                }
+            }
+            None => unsafe {
+                sys::restore(root_dir.as_ptr().cast(), ptr::null() as *const c_char);
+            },
         }
     }
 }

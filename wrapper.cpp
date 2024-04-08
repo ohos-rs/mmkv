@@ -19,6 +19,23 @@ extern "C" MMKV *get_mmkv_instance(MMKVMode mode, const char *cryptKey)
     return mmkv;
 }
 
+extern "C" MMKV *get_mmkv_instance_with_id(const char *mmap_id, MMKVMode mode, const char *cryptKey)
+{
+    std::string id(mmap_id);
+    std::string *tmp = nullptr;
+    if (cryptKey != nullptr)
+    {
+        tmp = new std::string(cryptKey);
+    }
+    auto mmkv = MMKV::mmkvWithID(id, mode, tmp);
+    if (tmp != nullptr)
+    {
+        delete tmp;
+        tmp = nullptr;
+    }
+    return mmkv;
+}
+
 extern "C" void init_mmkv(const char *dir, MMKVLogLevel logLevel, mmkv::LogHandler handler)
 {
     std::string tmp(dir);
@@ -62,10 +79,7 @@ extern "C" const char *get_string(MMKV *mmkv, const char *k)
     return resultCStr;
 }
 
-extern "C" void enable_auto_key_expire(MMKV *mmkv, uint32_t expire)
-{
-    mmkv->enableAutoKeyExpire(expire);
-}
+extern "C" void enable_auto_key_expire(MMKV *mmkv, uint32_t expire) { mmkv->enableAutoKeyExpire(expire); }
 
 extern "C" void set_double(MMKV *mmkv, double v, const char *k)
 {
@@ -132,12 +146,34 @@ extern "C" const char **all_keys(MMKV *mmkv, size_t *length)
     return c_strings.data();
 }
 
-extern "C" size_t get_actual_size(MMKV *mmkv)
+extern "C" size_t get_actual_size(MMKV *mmkv) { return mmkv->actualSize(); }
+
+extern "C" size_t get_total_size(MMKV *mmkv) { return mmkv->totalSize(); }
+
+extern "C" size_t back_up(const char *root_dir, const char *mmap_id)
 {
-    return mmkv->actualSize();
+    std::string dir(root_dir);
+    if (mmap_id == nullptr)
+    {
+        return MMKV::backupAllToDirectory(dir);
+    }
+    else
+    {
+        std::string id(mmap_id);
+        return MMKV::backupOneToDirectory(id, dir);
+    }
 }
 
-extern "C" size_t get_total_size(MMKV *mmkv)
+extern "C" size_t restore(const char *root_dir, const char *mmap_id)
 {
-    return mmkv->totalSize();
+    std::string dir(root_dir);
+    if (mmap_id == nullptr)
+    {
+        return MMKV::restoreAllFromDirectory(dir);
+    }
+    else
+    {
+        std::string id(mmap_id);
+        return MMKV::restoreOneFromDirectory(id, dir);
+    }
 }

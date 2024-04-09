@@ -259,6 +259,41 @@ impl JsMMKV {
         }
     }
 
+    /// get kv's count
+    /// @default false
+    #[napi]
+    pub fn count(&self, filter_expire: Option<bool>) -> i32 {
+        let expire = filter_expire.unwrap_or(false);
+        unsafe { sys::count(self.inner.clone(), expire) }
+    }
+
+    /// get key's size
+    /// @default false
+    #[napi]
+    pub fn get_value_size(&self, key: String, actual: Option<bool>) -> i32 {
+        let a = actual.unwrap_or(false);
+        let k = CString::new(key).unwrap();
+        unsafe { sys::get_value_size(self.inner.clone(), k.as_ptr().cast(), a) }
+    }
+
+    /// clear all kv with current mmkv
+    #[napi]
+    pub fn clear_all(&self, keep_space: Option<bool>) {
+        let k = keep_space.unwrap_or(false);
+        unsafe {
+            sys::clear_all(self.inner.clone(), k);
+        }
+    }
+
+    /// clear memory cache with current mmkv
+    #[napi]
+    pub fn clear_memory_cache(&self, keep_space: Option<bool>) {
+        let k = keep_space.unwrap_or(false);
+        unsafe {
+            sys::clear_memory_cache(self.inner.clone(), k);
+        }
+    }
+
     /// basic method to back up data
     #[napi]
     pub fn back_up_to_directory(dir: String, mmap_id: Option<String>) {
@@ -290,6 +325,15 @@ impl JsMMKV {
             None => unsafe {
                 sys::restore(root_dir.as_ptr().cast(), ptr::null() as *const c_char);
             },
+        }
+    }
+
+    /// remove instance
+    #[napi]
+    pub fn remove_storage(mmap_id: String) {
+        let id = CString::new(mmap_id).unwrap();
+        unsafe {
+            sys::remove_storage(id.as_ptr().cast());
         }
     }
 }

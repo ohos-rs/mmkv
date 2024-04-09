@@ -37,7 +37,11 @@ type MMKVLogHandler = Option<
 
 extern "C" {
     pub fn get_mmkv_instance(mode: MMKVMode, crypt_key: *const c_char) -> *const MMKV;
-    pub fn get_mmkv_instance_with_id(id: *const c_char, mode: MMKVMode, crypt_key: *const c_char) -> *const MMKV;
+    pub fn get_mmkv_instance_with_id(
+        id: *const c_char,
+        mode: MMKVMode,
+        crypt_key: *const c_char,
+    ) -> *const MMKV;
     pub fn get_mmap_id(mmkv: *const MMKV) -> *const c_char;
     pub fn init_mmkv(
         root_dir: *const c_char,
@@ -72,6 +76,11 @@ extern "C" {
     pub fn all_keys(mmkv: *const MMKV, length: *mut c_int) -> *const *const c_char;
     pub fn get_actual_size(mmkv: *const MMKV) -> c_int;
     pub fn get_total_size(mmkv: *const MMKV) -> c_int;
+    pub fn count(mmkv: *const MMKV, filter_expire: bool) -> c_int;
+    pub fn clear_all(mmkv: *const MMKV, keep_space: bool) -> c_void;
+    pub fn clear_memory_cache(mmkv: *const MMKV, keep_space: bool) -> c_void;
+    pub fn get_value_size(mmkv: *const MMKV, key: *const c_char, actual: bool) -> c_int;
     pub fn back_up(dir: *const c_char, mmap_id: *const c_char) -> c_int;
     pub fn restore(dir: *const c_char, mmap_id: *const c_char) -> c_int;
+    pub fn remove_storage(mmap_id: *const c_char) -> c_void;
 }

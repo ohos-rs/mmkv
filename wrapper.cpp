@@ -150,6 +150,18 @@ extern "C" size_t get_actual_size(MMKV *mmkv) { return mmkv->actualSize(); }
 
 extern "C" size_t get_total_size(MMKV *mmkv) { return mmkv->totalSize(); }
 
+extern "C" size_t get_value_size(MMKV *mmkv, const char *key, bool actual)
+{
+    std::string tmp(key);
+    return mmkv->getValueSize(tmp, actual);
+}
+
+extern "C" void clear_all(MMKV *mmkv, bool keep_space) { mmkv->clearAll(keep_space); }
+
+extern "C" void clear_memory_cache(MMKV *mmkv, bool keep_space) { mmkv->clearMemoryCache(keep_space); }
+
+extern "C" size_t count(MMKV *mmkv, bool filter_expire) { return mmkv->count(filter_expire); }
+
 extern "C" size_t back_up(const char *root_dir, const char *mmap_id)
 {
     std::string dir(root_dir);
@@ -176,4 +188,10 @@ extern "C" size_t restore(const char *root_dir, const char *mmap_id)
         std::string id(mmap_id);
         return MMKV::restoreOneFromDirectory(id, dir);
     }
+}
+
+extern "C" void remove_storage(const char *mmap_id)
+{
+    std::string tmp(mmap_id);
+    MMKV::removeStorage(tmp);
 }

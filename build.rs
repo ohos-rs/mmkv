@@ -5,15 +5,13 @@ use walkdir::{DirEntry, WalkDir};
 
 fn main() {
     let h = env::current_dir().unwrap().join("mmkv/Core");
-    let ndk = env::var("OHOS_NDK_HOME").unwrap();
 
     let is_release = env::var("PROFILE")
         .unwrap_or(String::from("DEBUG"))
         .eq("release");
 
-    let basic_h = PathBuf::from(&ndk).join("native/sysroot/usr/include");
     println!("cargo:rustc-link-search={:?}", &h);
-    println!("cargo:rustc-link-search={:?}", &basic_h);
+    println!("cargo:rustc-link-lib=static=clang_rt.builtins");
     println!("cargo:rerun-if-changed=wrapper.cpp");
 
     let v = env::var("TARGET").unwrap();
@@ -61,16 +59,12 @@ fn main() {
 
     builder
         .define("MMKV_EMBED_ZLIB", "1")
-        .flag(format!("--sysroot={}/native/sysroot", &ndk).as_str())
         .file("wrapper.cpp")
         .files(cpp_files)
-        .define("__MUSL__", None)
         .debug(!is_release)
         .cpp(true)
         .include(&h)
-        .include(&basic_h)
-        .cpp_link_stdlib("c++_shared")
-        .target(t.1)
+        .cpp_link_stdlib("c++_static")
         .compile("native_mmkv");
 
     napi_build_ohos::setup();
